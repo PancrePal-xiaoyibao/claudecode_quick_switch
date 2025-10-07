@@ -1,0 +1,162 @@
+#!/bin/bash
+
+# 定义服务商及其配置
+declare -A PROVIDERS=(
+    ["anyrouter"]="https://7a61fbe1b5f3.d93a09b6.top/"
+    ["moonshot"]="https://api.moonshot.cn/anthropic"
+    ["glm"]="https://open.bigmodel.cn/api/anthropic"
+    ["siliconflow"]="https://api.siliconflow.cn/"
+)
+
+# 定义服务商对应的认证令牌（请替换为你的密钥）
+declare -A AUTH_TOKENS=(
+    ["anyrouter"]="your-anyrouter-key-here"
+    ["moonshot"]="your-moonshot-key-here"
+    ["glm"]="your-glm-key-here"
+    ["siliconflow"]="your-siliconflow-key-here"
+)
+
+# 定义每个服务商支持的模型
+declare -A ANYROUTER_MODELS=(
+    ["default"]="claude-sonnet-4-20250514"
+    ["advanced"]="claude-3-7-sonnet-20250219"
+    ["enhanced"]="claude-sonnet-4-5-20250929"
+    ["haiku"]="claude-3-5-haiku-20241022"
+    ["sonnet"]="claude-3-5-sonnet-20241022"
+)
+
+declare -A MOONSHOT_MODELS=(
+    ["default"]="kimi-k2-0711-preview"
+)
+
+declare -A GLM_MODELS=(
+    ["haiku"]="glm-4.5-air"     # ANTHROPIC_DEFAULT_HAIKU_MODEL
+    ["sonnet"]="glm-4.5"        # ANTHROPIC_DEFAULT_SONNET_MODEL
+    ["opus"]="glm-4.5"          # ANTHROPIC_DEFAULT_OPUS_MODEL
+    ["default"]="glm-4.5"       # 默认使用 sonnet 模型
+)
+
+declare -A SILICONFLOW_MODELS=(
+    ["default"]="moonshotai/Kimi-K2-Instruct"
+)
+
+# 当前服务商
+CURRENT_PROVIDER="anyrouter"
+
+# 切换服务商的函数
+switch_provider() {
+    local provider=$1
+    if [[ -n "${PROVIDERS[$provider]}" ]]; then
+        CURRENT_PROVIDER=$provider
+        export ANTHROPIC_BASE_URL="${PROVIDERS[$provider]}"
+        export ANTHROPIC_AUTH_TOKEN="${AUTH_TOKENS[$provider]}"
+        echo "已切换到服务商: $provider"
+        echo "Base URL: ${PROVIDERS[$provider]}"
+        
+        # 设置默认模型
+        case $provider in
+            "anyrouter")
+                export ANTHROPIC_MODEL="${ANYROUTER_MODELS[default]}"
+                ;;
+            "moonshot")
+                export ANTHROPIC_MODEL="${MOONSHOT_MODELS[default]}"
+                ;;
+            "glm")
+                export ANTHROPIC_MODEL="${GLM_MODELS[default]}"
+                ;;
+            "siliconflow")
+                export ANTHROPIC_MODEL="${SILICONFLOW_MODELS[default]}"
+                ;;
+        esac
+        echo "当前模型: $ANTHROPIC_MODEL"
+    else
+        echo "错误: 未找到服务商 '$provider'"
+        echo "可用的服务商: ${!PROVIDERS[@]}"
+    fi
+}
+
+# 切换模型的函数
+switch_model() {
+    local model_key=$1
+    local models_var="${CURRENT_PROVIDER^^}_MODELS"  # 转换为大写
+    
+    case $CURRENT_PROVIDER in
+        "anyrouter")
+            if [[ -n "${ANYROUTER_MODELS[$model_key]}" ]]; then
+                export ANTHROPIC_MODEL="${ANYROUTER_MODELS[$model_key]}"
+                echo "已切换到模型: ${ANYROUTER_MODELS[$model_key]}"
+            else
+                echo "错误: 在 anyrouter 中未找到模型 '$model_key'"
+                echo "可用的模型: ${!ANYROUTER_MODELS[@]}"
+            fi
+            ;;
+        "moonshot")
+            if [[ -n "${MOONSHOT_MODELS[$model_key]}" ]]; then
+                export ANTHROPIC_MODEL="${MOONSHOT_MODELS[$model_key]}"
+                echo "已切换到模型: ${MOONSHOT_MODELS[$model_key]}"
+            else
+                echo "错误: 在 moonshot 中未找到模型 '$model_key'"
+                echo "可用的模型: ${!MOONSHOT_MODELS[@]}"
+            fi
+            ;;
+        "glm")
+            if [[ -n "${GLM_MODELS[$model_key]}" ]]; then
+                export ANTHROPIC_MODEL="${GLM_MODELS[$model_key]}"
+                echo "已切换到模型: ${GLM_MODELS[$model_key]}"
+            else
+                echo "错误: 在 glm 中未找到模型 '$model_key'"
+                echo "可用的模型: ${!GLM_MODELS[@]}"
+            fi
+            ;;
+        "siliconflow")
+            if [[ -n "${SILICONFLOW_MODELS[$model_key]}" ]]; then
+                export ANTHROPIC_MODEL="${SILICONFLOW_MODELS[$model_key]}"
+                echo "已切换到模型: ${SILICONFLOW_MODELS[$model_key]}"
+            else
+                echo "错误: 在 siliconflow 中未找到模型 '$model_key'"
+                echo "可用的模型: ${!SILICONFLOW_MODELS[@]}"
+            fi
+            ;;
+    esac
+}
+
+# 显示当前服务商的所有可用模型
+show_models() {
+    echo "当前服务商 ($CURRENT_PROVIDER) 可用的模型："
+    case $CURRENT_PROVIDER in
+        "anyrouter")
+            for key in "${!ANYROUTER_MODELS[@]}"; do
+                echo "- $key: ${ANYROUTER_MODELS[$key]}"
+            done
+            ;;
+        "moonshot")
+            for key in "${!MOONSHOT_MODELS[@]}"; do
+                echo "- $key: ${MOONSHOT_MODELS[$key]}"
+            done
+            ;;
+        "glm")
+            for key in "${!GLM_MODELS[@]}"; do
+                echo "- $key: ${GLM_MODELS[$key]}"
+            done
+            ;;
+        "siliconflow")
+            for key in "${!SILICONFLOW_MODELS[@]}"; do
+                echo "- $key: ${SILICONFLOW_MODELS[$key]}"
+            done
+            ;;
+    esac
+}
+
+# 初始化设置（使用默认服务商）
+switch_provider "anyrouter"
+
+# 打印使用说明
+echo
+echo "使用方法:"
+echo "1. 切换服务商: switch_provider <服务商名称>"
+echo "   可用的服务商: anyrouter, moonshot, glm, siliconflow"
+echo
+echo "2. 切换模型: switch_model <模型名称>"
+echo "   使用 show_models 命令查看当前服务商支持的模型"
+echo
+echo "3. 显示当前服务商的模型: show_models"

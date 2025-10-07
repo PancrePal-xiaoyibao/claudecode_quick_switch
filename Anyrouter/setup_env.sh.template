@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# 设置 Anthropic API 相关环境变量
+export ANTHROPIC_API_KEY=""
+# export ANTHROPIC_BASE_URL="https://anyrouter.top"
+export ANTHROPIC_BASE_URL="https://7a61fbe1b5f3.d93a09b6.top/"
+# 定义所有可用的模型
+declare -A MODELS=(
+    ["default"]="claude-sonnet-4-20250514"
+    ["advanced"]="claude-3-7-sonnet-20250219"
+    ["enhanced"]="claude-sonnet-4-5-20250929"
+    ["haiku"]="claude-3-5-haiku-20241022"
+    ["sonnet"]="claude-3-5-sonnet-20241022"
+)
+
+# 设置默认模型
+export ANTHROPIC_MODEL="${MODELS[default]}"
+
+# 切换模型的函数
+switch_model() {
+    local model_key=$1
+    if [[ -n "${MODELS[$model_key]}" ]]; then
+        export ANTHROPIC_MODEL="${MODELS[$model_key]}"
+        echo "已切换到模型: ${MODELS[$model_key]}"
+    else
+        echo "错误: 未找到模型 '$model_key'"
+        echo "可用的模型选项: ${!MODELS[@]}"
+    fi
+}
+
+# 打印设置成功信息
+echo "环境变量设置成功！"
+echo "ANTHROPIC_AUTH_TOKEN: $ANTHROPIC_AUTH_TOKEN"
+echo "ANTHROPIC_BASE_URL: $ANTHROPIC_BASE_URL"
+echo "当前使用的模型: $ANTHROPIC_MODEL"
+echo
+echo "可用的模型列表："
+echo "- default: ${MODELS[default]}"
+echo "- advanced: ${MODELS[advanced]}"
+echo "- enhanced: ${MODELS[enhanced]}"
+echo "- haiku: ${MODELS[haiku]}"
+echo "- sonnet: ${MODELS[sonnet]}"
+echo
+echo "使用方法: switch_model <模型名称>"
+echo "例如: switch_model advanced"
