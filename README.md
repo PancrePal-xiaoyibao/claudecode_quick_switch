@@ -28,6 +28,10 @@
    - Base URL: https://api.siliair/4.5/4.6
    - 支持 Kimi-K2-Instruct 模型
 
+5. **DashScope（阿里云百炼）**
+   - Base URL: https://dashscope.aliyuncs.com/apps/anthropic
+   - 支持 Qwen 系列模型（qwen-plus、qwen-flash）
+
 ## 可用模型
 
 ### Anyrouter 模型
@@ -48,6 +52,10 @@
 
 ### Siliconflow 模型
 - default: moonshotai/Kimi-K2-Instruct
+
+### DashScope（阿里云百炼）模型
+- default: qwen-plus
+- fast: qwen-flash
 
 ## 使用方法
 
