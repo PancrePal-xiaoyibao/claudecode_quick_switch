@@ -7,6 +7,7 @@ declare -A PROVIDERS=(
     ["glm"]="https://open.bigmodel.cn/api/anthropic"
     ["siliconflow"]="https://api.siliconflow.cn/"
     ["dashscope"]="https://dashscope.aliyuncs.com/apps/anthropic"
+    ["ilfow"]="https://apis.iflow.cn/v1/chat/completions"
 )
 
 # 定义服务商对应的认证令牌（请替换为你的密钥）
@@ -16,6 +17,7 @@ declare -A AUTH_TOKENS=(
     ["glm"]="your-glm-key-here"
     ["siliconflow"]="your-siliconflow-key-here"
     ["dashscope"]="your-dashscope-key-here"
+    ["ilfow"]="your-ilfow-key-here"
 )
 
 # 定义每个服务商支持的模型
@@ -46,6 +48,14 @@ declare -A SILICONFLOW_MODELS=(
 declare -A DASHSCOPE_MODELS=(
     ["default"]="qwen-plus"
     ["fast"]="qwen-flash"
+)
+
+# ilfow 模型
+declare -A ILFOW_MODELS=(
+    ["default"]="glm-4.6"
+    ["sonnet"]="deepseek-v3.1"
+    ["haiku"]="kimi-k2-0905"
+    ["opus"]="qwen3-coder-plus"
 )
 
 # 当前服务商
@@ -81,6 +91,9 @@ switch_provider() {
                 ;;
             "dashscope")
                 export ANTHROPIC_MODEL="${DASHSCOPE_MODELS[default]}"
+                ;;
+            "ilfow")
+                export ANTHROPIC_MODEL="${ILFOW_MODELS[default]}"
                 ;;
         esac
         echo "当前模型: $ANTHROPIC_MODEL"
@@ -144,6 +157,15 @@ switch_model() {
                 echo "可用的模型: default fast"
             fi
             ;;
+        "ilfow")
+            if [[ -n "${ILFOW_MODELS[$model_key]}" ]]; then
+                export ANTHROPIC_MODEL="${ILFOW_MODELS[$model_key]}"
+                echo "已切换到模型: ${ILFOW_MODELS[$model_key]}"
+            else
+                echo "错误: 在 ilfow 中未找到模型 '$model_key'"
+                echo "可用的模型: default sonnet haiku opus"
+            fi
+            ;;
     esac
 }
 
@@ -178,6 +200,12 @@ show_models() {
             echo "- default: ${DASHSCOPE_MODELS[default]}"
             echo "- fast: ${DASHSCOPE_MODELS[fast]}"
             ;;
+        "ilfow")
+            echo "- default: ${ILFOW_MODELS[default]}"
+            echo "- sonnet: ${ILFOW_MODELS[sonnet]}"
+            echo "- haiku: ${ILFOW_MODELS[haiku]}"
+            echo "- opus: ${ILFOW_MODELS[opus]}"
+            ;;
     esac
 }
 
@@ -188,7 +216,7 @@ switch_provider "anyrouter"
 echo
 echo "使用方法:"
 echo "1. 切换服务商: switch_provider <服务商名称>"
-echo "   可用的服务商: anyrouter, moonshot, glm, siliconflow, dashscope"
+echo "   可用的服务商: anyrouter, moonshot, glm, siliconflow, dashscope, ilfow"
 echo
 echo "2. 切换模型: switch_model <模型名称>"
 echo "   使用 show_models 命令查看当前服务商支持的模型"
