@@ -6,6 +6,7 @@ declare -A PROVIDERS=(
     ["moonshot"]="https://api.moonshot.cn/anthropic"
     ["glm"]="https://open.bigmodel.cn/api/anthropic"
     ["siliconflow"]="https://api.siliconflow.cn/"
+    ["dashscope"]="https://dashscope.aliyuncs.com/apps/anthropic"
 )
 
 # 定义服务商对应的认证令牌（请替换为你的密钥）
@@ -14,6 +15,7 @@ declare -A AUTH_TOKENS=(
     ["moonshot"]="your-moonshot-key-here"
     ["glm"]="your-glm-key-here"
     ["siliconflow"]="your-siliconflow-key-here"
+    ["dashscope"]="your-dashscope-key-here"
 )
 
 # 定义每个服务商支持的模型
@@ -40,10 +42,20 @@ declare -A SILICONFLOW_MODELS=(
     ["default"]="moonshotai/Kimi-K2-Instruct"
 )
 
+# DashScope（阿里云百炼）模型
+declare -A DASHSCOPE_MODELS=(
+    ["default"]="qwen-plus"
+    ["fast"]="qwen-flash"
+)
+
 # 当前服务商
 CURRENT_PROVIDER="anyrouter"
 
 # 切换服务商的函数
+# 功能：切换到指定服务商，设置该服务商的 API 地址和认证令牌，并应用其默认模型到环境变量。
+# 参数：$1 服务商名称（anyrouter | moonshot | glm | siliconflow | dashscope）。
+# 返回值：无（通过导出环境变量生效）。
+# 异常处理：当传入的服务商不存在时，打印错误信息并列出可用的服务商，不修改当前环境变量。
 switch_provider() {
     local provider=$1
     if [[ -n "${PROVIDERS[$provider]}" ]]; then
@@ -67,18 +79,24 @@ switch_provider() {
             "siliconflow")
                 export ANTHROPIC_MODEL="${SILICONFLOW_MODELS[default]}"
                 ;;
+            "dashscope")
+                export ANTHROPIC_MODEL="${DASHSCOPE_MODELS[default]}"
+                ;;
         esac
         echo "当前模型: $ANTHROPIC_MODEL"
     else
         echo "错误: 未找到服务商 '$provider'"
-        echo "可用的服务商: ${!PROVIDERS[@]}"
+        echo "可用的服务商: anyrouter moonshot glm siliconflow dashscope"
     fi
 }
 
 # 切换模型的函数
+# 功能：在当前服务商下，根据传入的模型键切换到对应的具体模型，并更新 ANTHROPIC_MODEL。
+# 参数：$1 模型键（如 default | haiku | sonnet | opus | advanced | enhanced | fast）。
+# 返回值：无（通过导出环境变量生效）。
+# 异常处理：当模型键在当前服务商下不存在时，打印错误信息并列出可用的模型，不修改当前环境变量。
 switch_model() {
     local model_key=$1
-    local models_var="${CURRENT_PROVIDER^^}_MODELS"  # 转换为大写
     
     case $CURRENT_PROVIDER in
         "anyrouter")
@@ -87,7 +105,7 @@ switch_model() {
                 echo "已切换到模型: ${ANYROUTER_MODELS[$model_key]}"
             else
                 echo "错误: 在 anyrouter 中未找到模型 '$model_key'"
-                echo "可用的模型: ${!ANYROUTER_MODELS[@]}"
+                echo "可用的模型: default advanced enhanced haiku sonnet"
             fi
             ;;
         "moonshot")
@@ -96,7 +114,7 @@ switch_model() {
                 echo "已切换到模型: ${MOONSHOT_MODELS[$model_key]}"
             else
                 echo "错误: 在 moonshot 中未找到模型 '$model_key'"
-                echo "可用的模型: ${!MOONSHOT_MODELS[@]}"
+                echo "可用的模型: default"
             fi
             ;;
         "glm")
@@ -105,7 +123,7 @@ switch_model() {
                 echo "已切换到模型: ${GLM_MODELS[$model_key]}"
             else
                 echo "错误: 在 glm 中未找到模型 '$model_key'"
-                echo "可用的模型: ${!GLM_MODELS[@]}"
+                echo "可用的模型: haiku sonnet opus default"
             fi
             ;;
         "siliconflow")
@@ -114,35 +132,51 @@ switch_model() {
                 echo "已切换到模型: ${SILICONFLOW_MODELS[$model_key]}"
             else
                 echo "错误: 在 siliconflow 中未找到模型 '$model_key'"
-                echo "可用的模型: ${!SILICONFLOW_MODELS[@]}"
+                echo "可用的模型: default"
+            fi
+            ;;
+        "dashscope")
+            if [[ -n "${DASHSCOPE_MODELS[$model_key]}" ]]; then
+                export ANTHROPIC_MODEL="${DASHSCOPE_MODELS[$model_key]}"
+                echo "已切换到模型: ${DASHSCOPE_MODELS[$model_key]}"
+            else
+                echo "错误: 在 dashscope 中未找到模型 '$model_key'"
+                echo "可用的模型: default fast"
             fi
             ;;
     esac
 }
 
 # 显示当前服务商的所有可用模型
+# 功能：打印当前服务商支持的所有模型键及对应的具体模型名称，便于选择。
+# 参数：无。
+# 返回值：无（输出到终端）。
+# 异常处理：无，根据当前服务商分支打印已定义的模型列表。
 show_models() {
     echo "当前服务商 ($CURRENT_PROVIDER) 可用的模型："
     case $CURRENT_PROVIDER in
         "anyrouter")
-            for key in "${!ANYROUTER_MODELS[@]}"; do
-                echo "- $key: ${ANYROUTER_MODELS[$key]}"
-            done
+            echo "- default: ${ANYROUTER_MODELS[default]}"
+            echo "- advanced: ${ANYROUTER_MODELS[advanced]}"
+            echo "- enhanced: ${ANYROUTER_MODELS[enhanced]}"
+            echo "- haiku: ${ANYROUTER_MODELS[haiku]}"
+            echo "- sonnet: ${ANYROUTER_MODELS[sonnet]}"
             ;;
         "moonshot")
-            for key in "${!MOONSHOT_MODELS[@]}"; do
-                echo "- $key: ${MOONSHOT_MODELS[$key]}"
-            done
+            echo "- default: ${MOONSHOT_MODELS[default]}"
             ;;
         "glm")
-            for key in "${!GLM_MODELS[@]}"; do
-                echo "- $key: ${GLM_MODELS[$key]}"
-            done
+            echo "- haiku: ${GLM_MODELS[haiku]}"
+            echo "- sonnet: ${GLM_MODELS[sonnet]}"
+            echo "- opus: ${GLM_MODELS[opus]}"
+            echo "- default: ${GLM_MODELS[default]}"
             ;;
         "siliconflow")
-            for key in "${!SILICONFLOW_MODELS[@]}"; do
-                echo "- $key: ${SILICONFLOW_MODELS[$key]}"
-            done
+            echo "- default: ${SILICONFLOW_MODELS[default]}"
+            ;;
+        "dashscope")
+            echo "- default: ${DASHSCOPE_MODELS[default]}"
+            echo "- fast: ${DASHSCOPE_MODELS[fast]}"
             ;;
     esac
 }
@@ -154,7 +188,7 @@ switch_provider "anyrouter"
 echo
 echo "使用方法:"
 echo "1. 切换服务商: switch_provider <服务商名称>"
-echo "   可用的服务商: anyrouter, moonshot, glm, siliconflow"
+echo "   可用的服务商: anyrouter, moonshot, glm, siliconflow, dashscope"
 echo
 echo "2. 切换模型: switch_model <模型名称>"
 echo "   使用 show_models 命令查看当前服务商支持的模型"
