@@ -53,7 +53,7 @@
 
 1. **初始化环境**
    ```bash
-   source claude_switch.sh
+   source cc_llm_quick_switch.sh
    ```
 
 2. **切换服务商**
