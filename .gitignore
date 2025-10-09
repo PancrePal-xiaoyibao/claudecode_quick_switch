@@ -3,3 +3,4 @@
 *.env
 .claude/*
 !README.md/
+!zshrc_snippet.md/

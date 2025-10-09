@@ -1,0 +1,66 @@
+# LLM Quick Switch 配置
+export CLAUDE_SWITCH_SCRIPT="/Users/qinxiaoqiang/Downloads/claude_code/cc_llm_quick_switch.sh"
+
+# 各服务商密钥（仅本机，不进仓库）
+export ANYROUTER_API_KEY="your-anyrouter-key"
+export MOONSHOT_API_KEY="your-moonshot-key"
+export GLM_API_KEY="your-glm-key"
+export SILICONFLOW_API_KEY="your-siliconflow-key"
+export DASHSCOPE_API_KEY="your-dashscope-key"
+export IFLOW_API_KEY="your-iflow-key"
+
+# 自动加载脚本（存在时）
+[[ -f "$CLAUDE_SWITCH_SCRIPT" ]] && {
+  source "$CLAUDE_SWITCH_SCRIPT"
+  # 设置默认服务商为 iflow
+  llm_provider iflow
+}
+
+# 函数：llm_provider
+# 功能：切换到指定服务商，并加载其默认模型与相关环境变量。
+# 参数：$1 服务商名称（iflow|anyrouter|moonshot|glm|siliconflow|dashscope）。
+# 返回值：无（通过环境变量生效）。
+# 异常处理：若服务商不存在或脚本未加载，打印错误信息并不修改现有环境。
+llm_provider() {
+  if ! command -v switch_provider >/dev/null 2>&1; then
+    echo "错误：脚本未加载或函数缺失，请确认 CLAUDE_SWITCH_SCRIPT 路径。"
+    return 1
+  fi
+  switch_provider "$1"
+  # 切换服务商后自动设置为 default 模型
+  llm_model default
+}
+
+# 函数：llm_model
+# 功能：在当前服务商下切换到指定模型键。
+# 参数：$1 模型键（如 default|haiku|sonnet|opus|advanced|enhanced|fast）。
+# 返回值：无（通过环境变量生效）。
+# 异常处理：若模型键不存在或脚本未加载，打印错误并不修改现有环境。
+llm_model() {
+  if ! command -v switch_model >/dev/null 2>&1; then
+    echo "错误：脚本未加载或函数缺失，请确认 CLAUDE_SWITCH_SCRIPT 路径。"
+    return 1
+  fi
+  switch_model "$1"
+}
+
+# 函数：llm_show
+# 功能：显示当前服务商支持的模型列表。
+# 参数：无。
+# 返回值：无（输出到终端）。
+# 异常处理：若脚本未加载，提示错误信息。
+llm_show() {
+  if ! command -v show_models >/dev/null 2>&1; then
+    echo "错误：脚本未加载或函数缺失，请确认 CLAUDE_SWITCH_SCRIPT 路径。"
+    return 1
+  fi
+  show_models
+}
+
+# 函数：llm_env（辅助）
+# 功能：显示当前关键环境变量状态。
+llm_env() {
+  echo "当前服务商：${CURRENT_PROVIDER}"
+  echo "API 地址：${ANTHROPIC_BASE_URL}"
+  echo "当前模型：${ANTHROPIC_MODEL}"
+}

@@ -7,7 +7,7 @@ declare -A PROVIDERS=(
     ["glm"]="https://open.bigmodel.cn/api/anthropic"
     ["siliconflow"]="https://api.siliconflow.cn/"
     ["dashscope"]="https://dashscope.aliyuncs.com/apps/anthropic"
-    ["ilfow"]="https://apis.iflow.cn/v1/chat/completions"
+    ["iflow"]="https://apis.iflow.cn/v1/chat/completions"
 )
 
 # 定义服务商对应的认证令牌（请替换为你的密钥）
@@ -17,7 +17,7 @@ declare -A AUTH_TOKENS=(
     ["glm"]="your-glm-key-here"
     ["siliconflow"]="your-siliconflow-key-here"
     ["dashscope"]="your-dashscope-key-here"
-    ["ilfow"]="your-ilfow-key-here"
+    ["iflow"]="your-iflow-key-here"
 )
 
 # 定义每个服务商支持的模型
@@ -50,8 +50,8 @@ declare -A DASHSCOPE_MODELS=(
     ["fast"]="qwen-flash"
 )
 
-# ilfow 模型
-declare -A ILFOW_MODELS=(
+# iflow 模型
+declare -A IFLOW_MODELS=(
     ["default"]="glm-4.6"
     ["sonnet"]="deepseek-v3.1"
     ["haiku"]="kimi-k2-0905"
@@ -92,14 +92,14 @@ switch_provider() {
             "dashscope")
                 export ANTHROPIC_MODEL="${DASHSCOPE_MODELS[default]}"
                 ;;
-            "ilfow")
-                export ANTHROPIC_MODEL="${ILFOW_MODELS[default]}"
+            "iflow")
+                export ANTHROPIC_MODEL="${IFLOW_MODELS[default]}"
                 ;;
         esac
         echo "当前模型: $ANTHROPIC_MODEL"
     else
         echo "错误: 未找到服务商 '$provider'"
-        echo "可用的服务商: anyrouter moonshot glm siliconflow dashscope"
+        echo "可用的服务商: anyrouter moonshot glm siliconflow dashscope iflow"
     fi
 }
 
@@ -157,12 +157,12 @@ switch_model() {
                 echo "可用的模型: default fast"
             fi
             ;;
-        "ilfow")
-            if [[ -n "${ILFOW_MODELS[$model_key]}" ]]; then
-                export ANTHROPIC_MODEL="${ILFOW_MODELS[$model_key]}"
-                echo "已切换到模型: ${ILFOW_MODELS[$model_key]}"
+        "iflow")
+            if [[ -n "${IFLOW_MODELS[$model_key]}" ]]; then
+                export ANTHROPIC_MODEL="${IFLOW_MODELS[$model_key]}"
+                echo "已切换到模型: ${IFLOW_MODELS[$model_key]}"
             else
-                echo "错误: 在 ilfow 中未找到模型 '$model_key'"
+                echo "错误: 在 iflow 中未找到模型 '$model_key'"
                 echo "可用的模型: default sonnet haiku opus"
             fi
             ;;
@@ -189,7 +189,6 @@ show_models() {
             ;;
         "glm")
             echo "- haiku: ${GLM_MODELS[haiku]}"
-            echo "- sonnet: ${GLM_MODELS[sonnet]}"
             echo "- opus: ${GLM_MODELS[opus]}"
             echo "- default: ${GLM_MODELS[default]}"
             ;;
@@ -200,11 +199,11 @@ show_models() {
             echo "- default: ${DASHSCOPE_MODELS[default]}"
             echo "- fast: ${DASHSCOPE_MODELS[fast]}"
             ;;
-        "ilfow")
-            echo "- default: ${ILFOW_MODELS[default]}"
-            echo "- sonnet: ${ILFOW_MODELS[sonnet]}"
-            echo "- haiku: ${ILFOW_MODELS[haiku]}"
-            echo "- opus: ${ILFOW_MODELS[opus]}"
+        "iflow")
+            echo "- default: ${IFLOW_MODELS[default]}"
+            echo "- sonnet: ${IFLOW_MODELS[sonnet]}"
+            echo "- haiku: ${IFLOW_MODELS[haiku]}"
+            echo "- opus: ${IFLOW_MODELS[opus]}"
             ;;
     esac
 }
@@ -216,7 +215,7 @@ switch_provider "anyrouter"
 echo
 echo "使用方法:"
 echo "1. 切换服务商: switch_provider <服务商名称>"
-echo "   可用的服务商: anyrouter, moonshot, glm, siliconflow, dashscope, ilfow"
+echo "   可用的服务商: anyrouter, moonshot, glm, siliconflow, dashscope, iflow"
 echo
 echo "2. 切换模型: switch_model <模型名称>"
 echo "   使用 show_models 命令查看当前服务商支持的模型"
